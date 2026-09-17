@@ -1,0 +1,523 @@
+Yes. You mean one combined revision sheet, with each experiment separated by CMD/terminal commands. Here it is.
+
+EXP 2 — HTTP Web Client
+
+SocketHTTPClient.java
+
+import java.io.*;
+import java.net.*;
+
+class SocketHTTPClient {
+    public static void main(String args[]) {
+        try {
+            Socket socket =
+                new Socket("www.martinbroadhurst.com", 80);
+
+            PrintWriter out =
+                new PrintWriter(socket.getOutputStream(), true);
+
+            out.println("GET / HTTP/1.1");
+            out.println("Host: www.martinbroadhurst.com");
+            out.println("");
+
+            BufferedReader in =
+                new BufferedReader(
+                    new InputStreamReader(socket.getInputStream()));
+
+            String line;
+
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            in.close();
+            out.close();
+            socket.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+CMD
+
+javac SocketHTTPClient.java
+java SocketHTTPClient
+
+The manual specifies the HTTP client using TCP socket port 80 and the GET request. 
+
+
+---
+
+EXP 3(a) — Echo Client & Server
+
+EchoServer.java
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+class EchoServer {
+    public static void main(String args[]) {
+        try {
+            ServerSocket ss = new ServerSocket(6666);
+            Socket s = ss.accept();
+
+            DataInputStream din =
+                new DataInputStream(s.getInputStream());
+
+            DataOutputStream dout =
+                new DataOutputStream(s.getOutputStream());
+
+            Scanner input = new Scanner(System.in);
+
+            String senddata = "";
+            String recievedata = "";
+
+            while (!recievedata.equals("stop")) {
+                recievedata = din.readUTF();
+
+                System.out.println(
+                    "CLIENT SAYS :" + recievedata);
+
+                System.out.print("TO CLIENT :");
+                senddata = input.nextLine();
+
+                dout.writeUTF(senddata);
+            }
+
+            din.close();
+            dout.close();
+            s.close();
+            ss.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+
+EchoClient.java
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+class EchoClient {
+    public static void main(String args[]) {
+        try {
+            Socket s =
+                new Socket("localhost", 6666);
+
+            DataInputStream din =
+                new DataInputStream(s.getInputStream());
+
+            DataOutputStream dout =
+                new DataOutputStream(s.getOutputStream());
+
+            Scanner input = new Scanner(System.in);
+
+            String senddata = "";
+            String recievedata = "";
+
+            while (!senddata.equals("stop")) {
+                System.out.print("TO SERVER :");
+                senddata = input.nextLine();
+
+                dout.writeUTF(senddata);
+
+                recievedata = din.readUTF();
+
+                System.out.println(
+                    "SERVER SAYS :" + recievedata);
+            }
+
+            din.close();
+            dout.close();
+            s.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+
+CMD 1 — Server
+
+javac EchoServer.java
+java EchoServer
+
+CMD 2 — Client
+
+javac EchoClient.java
+java EchoClient
+
+The manual uses TCP port 6666 and the readUTF()/writeUTF() communication pattern.  
+
+
+---
+
+EXP 3(b) — Chat Application
+
+ChatServer.java
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+class ChatServer {
+    public static void main(String args[]) {
+        try {
+            ServerSocket ss = new ServerSocket(6666);
+            Socket s = ss.accept();
+
+            DataInputStream din =
+                new DataInputStream(s.getInputStream());
+
+            DataOutputStream dout =
+                new DataOutputStream(s.getOutputStream());
+
+            Scanner input = new Scanner(System.in);
+
+            String senddata = "";
+            String recievedata = "";
+
+            while (!recievedata.equals("stop")) {
+                recievedata = din.readUTF();
+
+                System.out.println(
+                    "CLIENT SAYS :" + recievedata);
+
+                System.out.print("TO CLIENT :");
+                senddata = input.nextLine();
+
+                dout.writeUTF(senddata);
+            }
+
+            din.close();
+            dout.close();
+            s.close();
+            ss.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+
+ChatClient.java
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+class ChatClient {
+    public static void main(String args[]) {
+        try {
+            Socket s =
+                new Socket("localhost", 6666);
+
+            DataInputStream din =
+                new DataInputStream(s.getInputStream());
+
+            DataOutputStream dout =
+                new DataOutputStream(s.getOutputStream());
+
+            Scanner input = new Scanner(System.in);
+
+            String senddata = "";
+            String recievedata = "";
+
+            while (!senddata.equals("stop")) {
+                System.out.print("TO SERVER :");
+                senddata = input.nextLine();
+
+                dout.writeUTF(senddata);
+
+                recievedata = din.readUTF();
+
+                System.out.println(
+                    "SERVER SAYS :" + recievedata);
+            }
+
+            din.close();
+            dout.close();
+            s.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+}
+
+CMD 1 — Server
+
+javac ChatServer.java
+java ChatServer
+
+CMD 2 — Client
+
+javac ChatClient.java
+java ChatClient
+
+Your manual's 3(b) uses this same client-server send/receive structure on port 6666.  
+
+
+---
+
+EXP 3(c) — File Transfer
+
+FTPServer.java
+
+import java.io.*;
+import java.net.*;
+
+class FTPServer {
+    public static void main(String args[]) throws Exception {
+
+        ServerSocket ss = new ServerSocket(1024);
+
+        System.out.println("ServerSocket Generated");
+
+        Socket s = ss.accept();
+
+        System.out.println("ServerSocket Accepted");
+
+        BufferedReader br =
+            new BufferedReader(
+                new InputStreamReader(System.in));
+
+        PrintStream p =
+            new PrintStream(s.getOutputStream());
+
+        System.out.print("Enter a File Name: ");
+        String fname = br.readLine();
+
+        File f = new File(fname);
+
+        if (f.exists()) {
+            BufferedReader file =
+                new BufferedReader(
+                    new FileReader(fname));
+
+            String line;
+
+            while ((line = file.readLine()) != null) {
+                p.println(line);
+            }
+
+            file.close();
+        }
+
+        p.close();
+        s.close();
+        ss.close();
+    }
+}
+
+FTPClient.java
+
+import java.io.*;
+import java.net.*;
+
+class FTPClient {
+    public static void main(String args[]) throws Exception {
+
+        InetAddress ia =
+            InetAddress.getLocalHost();
+
+        Socket s = new Socket(ia, 1024);
+
+        System.out.print("Enter a new File Name: ");
+
+        BufferedReader br =
+            new BufferedReader(
+                new InputStreamReader(System.in));
+
+        String fname = br.readLine();
+
+        PrintWriter p =
+            new PrintWriter(
+                new FileWriter(fname));
+
+        BufferedReader in =
+            new BufferedReader(
+                new InputStreamReader(
+                    s.getInputStream()));
+
+        String line;
+
+        while ((line = in.readLine()) != null) {
+            p.println(line);
+        }
+
+        p.close();
+        s.close();
+    }
+}
+
+CMD 1 — Server
+
+javac FTPServer.java
+java FTPServer
+
+CMD 2 — Client
+
+javac FTPClient.java
+java FTPClient
+
+This follows the manual's TCP file-transfer program using port 1024. 
+
+
+---
+
+EXP 4 — DNS using UDP
+
+Server.java
+
+import java.net.*;
+
+class Server {
+    public static void main(String args[]) throws Exception {
+
+        DatagramSocket ds =
+            new DatagramSocket(1309);
+
+        byte[] data = new byte[1024];
+
+        DatagramPacket dp =
+            new DatagramPacket(data, data.length);
+
+        ds.receive(dp);
+
+        String name =
+            new String(dp.getData()).trim();
+
+        String ip = "";
+
+        if (name.equals("www.aptitudeguru.com"))
+            ip = "165.165.80.80";
+
+        else if (name.equals(
+            "www.downloadcyclone.blogspot.com"))
+            ip = "165.165.79.1";
+
+        else
+            ip = "IP not found";
+
+        byte[] result = ip.getBytes();
+
+        DatagramPacket reply =
+            new DatagramPacket(
+                result,
+                result.length,
+                dp.getAddress(),
+                dp.getPort());
+
+        ds.send(reply);
+
+        ds.close();
+    }
+}
+
+Client.java
+
+import java.net.*;
+import java.io.*;
+
+class Client {
+    public static void main(String args[]) throws Exception {
+
+        DatagramSocket ds =
+            new DatagramSocket();
+
+        BufferedReader br =
+            new BufferedReader(
+                new InputStreamReader(System.in));
+
+        System.out.print("Enter domain name: ");
+
+        String name = br.readLine();
+
+        byte[] data = name.getBytes();
+
+        DatagramPacket dp =
+            new DatagramPacket(
+                data,
+                data.length,
+                InetAddress.getByName("localhost"),
+                1309);
+
+        ds.send(dp);
+
+        byte[] result = new byte[1024];
+
+        DatagramPacket reply =
+            new DatagramPacket(
+                result, result.length);
+
+        ds.receive(reply);
+
+        System.out.println(
+            "IP Address: " +
+            new String(reply.getData()).trim());
+
+        ds.close();
+    }
+}
+
+CMD 1 — Server
+
+javac Server.java
+java Server
+
+CMD 2 — Client
+
+javac Client.java
+java Client
+
+The manual's Experiment 4 uses UDP DatagramSocket, DatagramPacket, and port 1309 for the DNS simulation. 
+
+
+---
+
+🔥 CMD order to remember
+
+EXP 2
+→ javac SocketHTTPClient.java
+→ java SocketHTTPClient
+
+
+EXP 3(a)
+CMD 1 → javac EchoServer.java
+       → java EchoServer
+
+CMD 2 → javac EchoClient.java
+       → java EchoClient
+
+
+EXP 3(b)
+CMD 1 → javac ChatServer.java
+       → java ChatServer
+
+CMD 2 → javac ChatClient.java
+       → java ChatClient
+
+
+EXP 3(c)
+CMD 1 → javac FTPServer.java
+       → java FTPServer
+
+CMD 2 → javac FTPClient.java
+       → java FTPClient
+
+
+EXP 4
+CMD 1 → javac Server.java
+       → java Server
+
+CMD 2 → javac Client.java
+       → java Client
+
+Ports: 2 → 80, 3(a/b) → 6666, 3(c) → 1024, 4 → 1309.
